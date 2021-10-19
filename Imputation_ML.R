@@ -1,11 +1,5 @@
-ampute_init <- function(){
-  props <- c(0.05, 0.25, 0.5, 0.75)
-  mechs <- c("MCAR", "MAR", "MNAR")
-  datasets <- list(abalone = df.egs, asn = df.asn, ccp = df.ccp, pageblocks = df.pageblocks, pendigits = df.pendigits, 
-                   spambase = df.spambase, magic = df.magic, onp = df.onp, concrete = df.concrete, superconductor = df.superconductor)
-}
-
 ampute_dfs <- function(dfs){
+  print("Amputing...")
   library(mice)
   amputed_dfs <- list()
   names <- vector()
@@ -14,9 +8,10 @@ ampute_dfs <- function(dfs){
       for (mech in mechs){
         df <- data.frame(dfs[[i]])
         df_name <- paste(names(dfs)[i], mech, prop, sep = "_")
+        print(df_name)
         names <- c(names, df_name)
         to_ampute <- df[ , setdiff(names(df), c("Output"))]
-        amped_df <- ampute(data = to_ampute, prop = prop, bycases = FALSE, patterns = diag(ncol(df)), mech = mech)$amp
+        amped_df <- ampute(data = to_ampute, prop = prop, bycases = FALSE, patterns = diag(ncol(to_ampute)), mech = mech)$amp
         amped_df <- data.frame(amped_df, df$Output)
         amputed_dfs <- c(amputed_dfs, list(amped_df))
       }
@@ -50,7 +45,7 @@ impute_dfs <- function(dfs, option){
       tic <- Sys.time()
       imp <- df[complete.cases(df), ]
       time <- difftime(Sys.time(), tic, units = "secs")[[1]]
-      imputed_dfs_cca <- c(imputed_dfs_cca, list(imp))
+      imputed_cca <- c(imputed_cca, list(imp))
       time.dat <- paste(names(dfs)[i], round(time, 4), option, sep = "_")
       time.dat <- str_split(time.dat, "_")
       
@@ -82,7 +77,7 @@ impute_dfs <- function(dfs, option){
       tic <- Sys.time()
       imp <- mean_impute(df)
       time <- difftime(Sys.time(), tic, units = "secs")[[1]]
-      imputed_dfs_mean <- c(imputed_dfs_mean, list(imp))
+      imputed_mean <- c(imputed_mean, list(imp))
       time.dat <- paste(names(dfs)[i], round(time, 4), option, sep = "_")
       time.dat <- str_split(time.dat, "_")
       
@@ -117,7 +112,7 @@ impute_dfs <- function(dfs, option){
       imp <- hotdeck(df, imp_var = FALSE)
 
       time <- difftime(Sys.time(), tic, units = "secs")[[1]]
-      imputed_dfs_hotdeck <- c(imputed_dfs_hotdeck, list(imp))
+      imputed_hotdeck <- c(imputed_hotdeck, list(imp))
       time.dat <- paste(names(dfs)[i], round(time, 4), option, sep = "_")
       time.dat <- str_split(time.dat, "_")
       
@@ -151,7 +146,7 @@ impute_dfs <- function(dfs, option){
       imp <- complete(mice(df, m = 1, defaultMethod = c("cart", "logreg", "polyreg", "polr")), 1)
       #imp <-  complete(mice(df, m = 1, defaultMethod = c("cart", "logreg", "polyreg", "polr"), predictorMatrix = quickpred(df, mincor = 0.25, minpuc = 0.25)), 1)
       time <- difftime(Sys.time(), tic, units = "secs")[[1]]
-      imputed_dfs_regression <- c(imputed_dfs_regression, list(imp))
+      imputed_regression <- c(imputed_regression, list(imp))
       time.dat <- paste(names(dfs)[i], round(time, 4), option, sep = "_")
       time.dat <- str_split(time.dat, "_")
       
@@ -183,7 +178,7 @@ impute_dfs <- function(dfs, option){
       imp <- mice(df, m = 5, defaultMethod = c("cart", "logreg", "polyreg", "polr"))
       #imp <- mice(df, m = 5, defaultMethod = c("cart", "logreg", "polyreg", "polr"), predictorMatrix = quickpred(df, mincor = 0.25, minpuc = 0.25) )
       time <- difftime(Sys.time(), tic, units = "secs")[[1]]
-      imputed_dfs_mi <- c(imputed_dfs_mi, list(imp))
+      imputed_mi <- c(imputed_mi, list(imp))
       time.dat <- paste(names(dfs)[i], round(time, 4), option, sep = "_")
       time.dat <- str_split(time.dat, "_")
       
@@ -289,6 +284,11 @@ Mode <- function(x, na.rm=FALSE) {
   return(res)
 }
 
+
+calculate_mode <- function(x) {
+  uniqx <- unique(x)
+  uniqx[which.max(tabulate(match(x, uniqx)))]
+}
 
 save_plots_metric <- function(mechanisms, names){
   for (mech in mechanisms){
