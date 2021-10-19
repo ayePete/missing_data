@@ -1,3 +1,8 @@
+# Dependencies
+library(stringr)
+library(tidyverse)
+library(mice)
+
 ## Load datasets
 
 dataset_names <- c("asn", "ccp", "concrete", "egs", "magic", "onp", "pageblocks", "pendigits", "spambase", "superconductor")
