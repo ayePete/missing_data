@@ -18,8 +18,11 @@ datasets[["magic"]]$Output <- as.factor(datasets[["magic"]]$Output)
 
 ## Perform Amputation and Imputation
 
+props <- c(0.05, 0.25, 0.5, 0.75)
+mechs <- c("MCAR", "MAR", "MNAR")
+
 source("Imputation_ML.R")
-source("logreg.R")
+
 test_indices <- generate_test_indices(datasets)
 train_test <- train_test_split(datasets, test_indices)
 ampute_init()
